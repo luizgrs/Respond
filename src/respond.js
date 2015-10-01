@@ -345,6 +345,9 @@
 		},
 		
 		addCompleteCallback = function(callback){
+			if (typeof respond.onRespondComplete !== "function")
+				return;
+
 			callbacks.push(callback);
 			
 			if(processingCompleted)
