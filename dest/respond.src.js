@@ -1,5 +1,5 @@
 /*! Respond.js v1.4.2: min/max-width media query polyfill
- * Copyright 2014 Scott Jehl
+ * Copyright 2015 Scott Jehl
  * Licensed under MIT
  * http://j.mp/respondjs */
 
@@ -31,6 +31,7 @@
   var respond = {};
   w.respond = respond;
   respond.update = function() {};
+  respond.addCompleteCallback = function() {};
   var requestQueue = [], xmlHttp = function() {
     var xmlhttpmethod = false;
     try {
@@ -79,7 +80,7 @@
   if (respond.mediaQueriesSupported) {
     return;
   }
-  var doc = w.document, docElem = doc.documentElement, mediastyles = [], rules = [], appendedEls = [], parsedSheets = {}, resizeThrottle = 30, head = doc.getElementsByTagName("head")[0] || docElem, base = doc.getElementsByTagName("base")[0], links = head.getElementsByTagName("link"), lastCall, resizeDefer, eminpx, getEmValue = function() {
+  var doc = w.document, docElem = doc.documentElement, mediastyles = [], rules = [], appendedEls = [], parsedSheets = {}, resizeThrottle = 30, head = doc.getElementsByTagName("head")[0] || docElem, base = doc.getElementsByTagName("base")[0], links = head.getElementsByTagName("link"), callbacks = [], processingCompleted, lastCall, resizeDefer, eminpx, getEmValue = function() {
     var ret, div = doc.createElement("div"), body = doc.body, originalHTMLFontSize = docElem.style.fontSize, originalBodyFontSize = body && body.style.fontSize, fakeUsed = false;
     div.style.cssText = "position:absolute;font-size:1em;width:1em";
     if (!body) {
@@ -200,8 +201,14 @@
           makeRequests();
         }, 0);
       });
+    } else {
+      processingCompleted = true;
+      for (var x = 0; x < callbacks.length; x++) {
+        callbacks[x]();
+      }
     }
   }, ripCSS = function() {
+    processingCompleted = false;
     for (var i = 0; i < links.length; i++) {
       var sheet = links[i], href = sheet.href, media = sheet.media, isCSS = sheet.rel && sheet.rel.toLowerCase() === "stylesheet";
       if (!!href && isCSS && !parsedSheets[href]) {
@@ -222,9 +229,18 @@
       }
     }
     makeRequests();
+  }, addCompleteCallback = function(callback) {
+    if (typeof respond.onRespondComplete !== "function") {
+      return;
+    }
+    callbacks.push(callback);
+    if (processingCompleted) {
+      callback();
+    }
   };
   ripCSS();
   respond.update = ripCSS;
+  respond.addCompleteCallback = addCompleteCallback;
   respond.getEmValue = getEmValue;
   function callMedia() {
     applyMedia(true);
