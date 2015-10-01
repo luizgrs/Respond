@@ -306,8 +306,9 @@
 				//there are nothing in queue so everything was processed
 				processingCompleted = true;
 				
-				for(var x=0;x<callbacks.length;x++)
+				for(var x=0;x<callbacks.length;x++){
 					callbacks[x]();
+				}
 			}
 		},
 
@@ -345,13 +346,15 @@
 		},
 		
 		addCompleteCallback = function(callback){
-			if (typeof respond.onRespondComplete !== "function")
+			if (typeof respond.onRespondComplete !== "function"){
 				return;
+			}
 
 			callbacks.push(callback);
 			
-			if(processingCompleted)
+			if(processingCompleted){
 				callback();
+			}
 		};
 
 	//translate CSS
