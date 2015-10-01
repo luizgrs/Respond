@@ -9,7 +9,10 @@
 
 	//define update even in native-mq-supporting browsers, to avoid errors
 	respond.update = function(){};
-
+	
+	//defining for the same reason as .update
+	respond.addCompleteCallback = function(){};
+    
 	//define ajax obj
 	var requestQueue = [],
 		xmlHttp = (function() {
@@ -83,13 +86,15 @@
 		head = doc.getElementsByTagName( "head" )[0] || docElem,
 		base = doc.getElementsByTagName( "base" )[0],
 		links = head.getElementsByTagName( "link" ),
-
+		callbacks = [],
+		processingCompleted,
+		
 		lastCall,
 		resizeDefer,
 
 		//cached container for 1em value, populated the first time it's needed
 		eminpx,
-
+		
 		// returns the value of 1em in pixels
 		getEmValue = function() {
 			var ret,
@@ -296,11 +301,20 @@
 					w.setTimeout(function(){ makeRequests(); },0);
 				} );
 			}
+			else
+			{
+				//there are nothing in queue so everything was processed
+				processingCompleted = true;
+				
+				for(var x=0;x<callbacks.length;x++)
+					callbacks[x]();
+			}
 		},
 
 		//loop stylesheets, send text content to translate
 		ripCSS = function(){
-
+			processingCompleted = false;
+			
 			for( var i = 0; i < links.length; i++ ){
 				var sheet = links[ i ],
 				href = sheet.href,
@@ -328,6 +342,13 @@
 				}
 			}
 			makeRequests();
+		},
+		
+		addCompleteCallback = function(callback){
+			callbacks.push(callback);
+			
+			if(processingCompleted)
+				callback();
 		};
 
 	//translate CSS
@@ -335,7 +356,10 @@
 
 	//expose update for re-running respond later on
 	respond.update = ripCSS;
-
+	
+	//expose addcompletecallback
+	respond.addCompleteCallback = addCompleteCallback;
+	
 	//expose getEmValue
 	respond.getEmValue = getEmValue;
 
