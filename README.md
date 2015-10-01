@@ -103,6 +103,7 @@ Sure, a couple:
 - respond.update() : rerun the parser (helpful if you added a stylesheet to the page and it needs to be translated)
 - respond.mediaQueriesSupported: set to true if the browser natively supports media queries.
 - respond.getEmValue() : returns the pixel value of one em
+- respond.addCompleteCallback() : adds a function to be called when respond.js completes processing css files
 
 
 Alternatives to this script
